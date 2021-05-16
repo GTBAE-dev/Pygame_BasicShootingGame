@@ -199,9 +199,10 @@ while running:
 
     # 공과 캐릭터의 충돌
     if character_rect.colliderect(ball_rect):
+        game_result = "Game Over"
         running = False
         break
-
+    
     ''' 3-5. 화면에 그리기 '''
     # 배경
     screen.blit(background, (0, 0)) # 제일 왼쪽 위 점의 좌표 (0, 0)
@@ -228,7 +229,22 @@ while running:
     timer = game_font.render("Time : {0}".format(int(total_time - elapsed_time)), True, (255, 255, 255)) # render(text msg, antialias, color) / antalias : 선을 부드럽게 만드는 기법
     screen.blit(timer, (10,10)) # blit을 통한 화면에 객체 그리기
 
+    # 종료 처리
+    if len(balls) == 0:
+        game_result = "Mission Complete"
+        running = False
+
+    if total_time - elapsed_time <= 0:
+        game_result = "Time Over"
+        running = False
     pygame.display.update() # 매 frame마다 화면을 새로 그려주는 동작(이전 화면이 지워지는게 아님, 덮어쓰기)
 
 ''' 4. 종료 '''
+# 게임 오버 메시지
+msg = game_font.render(game_result, True, (255, 255, 0))
+msg_rect = msg.get_rect(center = (int(screen_width / 2), int(screen_height / 2)))
+screen.blit(msg, msg_rect)
+pygame.display.update() # running = False 되면서 메인 루프 탈출 후 display update
+
+pygame.time.delay(1000) # 종료 직전 1초 대기
 pygame.quit() # pygame 종료
