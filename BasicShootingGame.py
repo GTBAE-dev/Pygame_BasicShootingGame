@@ -137,6 +137,70 @@ while running:
         ball_val["pos_y"] += ball_val["to_y"]
 
     ''' 3-4. 충돌처리 '''
+    # 캐릭터 rect 정보 업데이트
+    character_rect = character.get_rect() # rect: 크기 정보, 좌표 정보를 갖는 객체(top, bottom, center(centerx, centery), left, right, width, height)
+    character_rect.left = character_x_pos
+    character_rect.top = character_y_pos
+
+    # 공 rect 정보 없데이트
+    for ball_idx, ball_val in enumerate(balls):
+        ball_pos_x = ball_val["pos_x"]
+        ball_pos_y = ball_val["pos_y"]
+        ball_img_idx = ball_val["img_idx"]
+        ball_rect = ball_images[ball_img_idx].get_rect()
+        ball_rect.left = ball_pos_x
+        ball_rect.top = ball_pos_y
+        
+        # 무기 rect 정보 업데이트
+        for weapon_idx, weapon_val in enumerate(weapons):
+            weapon_pos_x = weapon_val[0]
+            weapon_pos_y = weapon_val[1]
+
+            weapon_rect = weapon.get_rect()
+            weapon_rect.left = weapon_pos_x
+            weapon_rect.top = weapon_pos_y
+            
+            # 무기와 공 충돌
+            if weapon_rect.colliderect(ball_rect):
+                weapon_to_remove = weapon_idx
+                balls_to_remove = ball_idx
+                if ball_img_idx < 3:
+                    ball_width = ball_rect.size[0]
+                    ball_height = ball_rect.size[1]
+                    small_ball_rect = ball_images[ball_img_idx + 1].get_rect() # 작은 공으로 쪼개지게 처리
+                    small_ball_width = small_ball_rect.size[0] # 작은 공의 rect 정보 추가
+                    small_ball_height = small_ball_rect.size[1]
+                    balls.append({ # 왼쪽으로 튕겨 나가는 공
+                        "pos_x" : ball_pos_x + (ball_width/2) - (small_ball_width/2),
+                        "pos_y" : ball_pos_y + (ball_height/2 - (small_ball_height/2)),
+                        "img_idx" : ball_img_idx +1, 
+                        "to_x": -3, 
+                        "to_y": -6, 
+                        "init_spd_y": ball_speed_y[ball_img_idx + 1]})
+                    balls.append({ # 오른쪽으로 튕겨 나가는 공
+                        "pos_x" : ball_pos_x + (ball_width/2) - (small_ball_width/2),
+                        "pos_y" : ball_pos_y + (ball_height/2 - (small_ball_height/2)),
+                        "img_idx" : ball_img_idx +1, 
+                        "to_x": 3, 
+                        "to_y": -6, 
+                        "init_spd_y": ball_speed_y[ball_img_idx + 1]})
+                break
+        else: # 2중 for문을 버그 없이 탈출하는 방법
+            continue
+        break
+
+    # 충돌 된 공 / 무기 없애기
+    if balls_to_remove > -1:
+        del balls[balls_to_remove]
+        balls_to_remove = -1
+    if weapon_to_remove > -1:
+        del weapons[weapon_to_remove]
+        weapon_to_remove = -1 
+
+    # 공과 캐릭터의 충돌
+    if character_rect.colliderect(ball_rect):
+        running = False
+        break
 
     ''' 3-5. 화면에 그리기 '''
     # 배경
